@@ -1,0 +1,32 @@
+# Flutter/Dart/Pub
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+
+# Build outputs
+build/
+
+# iOS
+ios/Flutter/Flutter.framework
+ios/Flutter/App.framework
+ios/.generated/
+ios/Pods/
+ios/Runner.xcworkspace/
+ios/Runner.xcodeproj/project.xcworkspace/
+xcuserdata/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+
+# VS Code
+.vscode/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Other
+*.lock
