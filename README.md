@@ -25,8 +25,6 @@ The app consumes REST APIs to display popular and recommended dishes, supports a
 ### Dish Detail Screen
 <img src="screenshots/dish_detail.png" width="300"/>
 
-### Cart / Selection Preview
-<img src="screenshots/cart.png" width="300"/>
 
 ---
 
