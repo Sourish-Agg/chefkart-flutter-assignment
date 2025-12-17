@@ -6,55 +6,33 @@ class DishDetailScreen extends StatefulWidget {
   final String dishId;
   final Dish dish;
 
-  const DishDetailScreen({super.key, required this.dishId, required this.dish});
+  const DishDetailScreen({
+    super.key,
+    required this.dishId,
+    required this.dish,
+  });
 
   @override
   State<DishDetailScreen> createState() => _DishDetailScreenState();
 }
 
 class _DishDetailScreenState extends State<DishDetailScreen> {
-  final ApiService _apiService = ApiService();
-  DishDetail? _dishDetail;
-  bool _isLoading = true;
-  String _errorMessage = '';
+  final ApiService api = ApiService();
+  DishDetail? detail;
+  bool loading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadDishDetail();
+    load();
   }
 
-  Future<void> _loadDishDetail() async {
-    try {
-      final detail = await _apiService.fetchDishDetail(widget.dishId);
-      final effectiveRating = (detail.rating <= 0.0) ? widget.dish.rating : detail.rating;
-      setState(() {
-        _dishDetail = DishDetail(
-          id: detail.id,
-          name: detail.name,
-          description: detail.description,
-          image: detail.image.isNotEmpty ? detail.image : widget.dish.image,
-          rating: effectiveRating,
-          cookingTime: detail.cookingTime,
-          servings: detail.servings,
-          ingredients: detail.ingredients,
-          appliances: detail.appliances,
-        );
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
-
-  String _getValidImageUrl(String imageUrl) {
-    if (imageUrl.isEmpty || !imageUrl.startsWith('http')) {
-      return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800';
-    }
-    return imageUrl;
+  Future<void> load() async {
+    final d = await api.fetchDishDetail(widget.dishId);
+    setState(() {
+      detail = d;
+      loading = false;
+    });
   }
 
   @override
@@ -62,158 +40,234 @@ class _DishDetailScreenState extends State<DishDetailScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.black), onPressed: () => Navigator.pop(context)),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
       ),
-      body: _isLoading
+      body: loading
           ? const Center(child: CircularProgressIndicator())
-          : _errorMessage.isNotEmpty
-          ? Center(child: Text('Error: $_errorMessage'))
-          : _dishDetail == null
-          ? const Center(child: Text('No data available'))
           : SingleChildScrollView(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _buildHeader(),
-          _buildCookingTime(),
-          _buildIngredientsSection(),
-          _buildAppliancesSection(),
-          const SizedBox(height: 24),
-        ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _header(context),
+            _ingredients(),
+            _appliances(),
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _header(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Row(children: [
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(
-              _dishDetail!.name,
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      child: SizedBox(
+        height: 240,
+        child: Stack(
+          children: [
+            Positioned(
+              right: -90,
+              top: -40,
+              child: Container(
+                width: 280,
+                height: 280,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFF5EA),
+                  shape: BoxShape.circle,
+                ),
+              ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              _dishDetail!.description,
-              style: const TextStyle(fontSize: 15, height: 1.5, color: Colors.black54),
+            Positioned(
+              right: -40,
+              top: 30,
+              child: Image.network(
+                'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe',
+                width: 180,
+                fit: BoxFit.contain,
+              ),
             ),
-          ]),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.dish.name,
+                        style: const TextStyle(
+                          fontSize: 34,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            widget.dish.rating.toStringAsFixed(1),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.star,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.6,
+                  child: Text(
+                    widget.dish.description,
+                    style: const TextStyle(
+                      color: Colors.black54,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.6,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.access_time, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        detail!.cookingTime,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-        if (_dishDetail!.rating > 0)
-          Container(
-            margin: const EdgeInsets.only(left: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(color: Colors.green.shade600, borderRadius: BorderRadius.circular(8)),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Text(_dishDetail!.rating.toStringAsFixed(1), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-              const SizedBox(width: 6),
-              const Icon(Icons.star, size: 14, color: Colors.white),
-            ]),
-          ),
-      ]),
+      ),
     );
   }
 
-  Widget _buildCookingTime() {
+  Widget _ingredients() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(children: [
-        const Icon(Icons.access_time, size: 22, color: Colors.black54),
-        const SizedBox(width: 10),
-        Text(_dishDetail!.cookingTime, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-      ]),
-    );
-  }
-
-  Widget _buildIngredientsSection() {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Stack(children: [
-        Container(
-          height: 200,
-          decoration: BoxDecoration(
-            image: DecorationImage(image: NetworkImage(_getValidImageUrl(_dishDetail!.image)), fit: BoxFit.cover, alignment: Alignment.centerRight),
+      padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Ingredients',
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
           ),
-        ),
-        Container(
-          height: 200,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(begin: Alignment.centerLeft, end: Alignment.centerRight, colors: [Colors.white, Colors.white.withOpacity(0.9), Colors.transparent]),
-          ),
-        ),
-      ]),
-      Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Ingredients', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
           const SizedBox(height: 6),
-          Text('For ${_dishDetail!.servings} people', style: const TextStyle(fontSize: 14, color: Colors.black54)),
-          const SizedBox(height: 18),
-          ..._dishDetail!.ingredients.map((category) => _buildIngredientCategory(category)).toList(),
-        ]),
+          const Text(
+            'For 2 people',
+            style: TextStyle(color: Colors.black54),
+          ),
+          const SizedBox(height: 20),
+          _ingredientBlock(
+              'Vegetables (05)', detail!.ingredients.first.items),
+          _ingredientBlock(
+              'Spices (10)', detail!.ingredients.last.items),
+        ],
       ),
-    ]);
+    );
   }
 
-  Widget _buildIngredientCategory(IngredientCategory category) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      InkWell(
-        onTap: () {
-          setState(() {
-            category.isExpanded = !category.isExpanded;
-          });
-        },
-        child: Padding(
+  Widget _ingredientBlock(String title, List<IngredientItem> items) {
+    return Column(
+      children: [
+        Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('${category.name} (${category.items.length.toString().padLeft(2, '0')})', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-            Icon(category.isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 26, color: Colors.black54),
-          ]),
-        ),
-      ),
-      if (category.isExpanded)
-        ...category.items.map((item) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text(item.name, style: const TextStyle(fontSize: 16)),
-              Text(item.quantity, style: const TextStyle(fontSize: 16, color: Colors.black54)),
-            ]),
-          );
-        }).toList(),
-      const Divider(height: 24),
-    ]);
-  }
-
-  Widget _buildAppliancesSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Appliances', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 140,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: _dishDetail!.appliances.length,
-            itemBuilder: (context, index) {
-              final appliance = _dishDetail!.appliances[index];
-              return Container(
-                width: 140,
-                margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
-                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Icon(Icons.kitchen, size: 48, color: Colors.grey[400]),
-                  const SizedBox(height: 12),
-                  Text(appliance, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
-                ]),
-              );
-            },
+          child: Row(
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+              const Spacer(),
+              const Icon(Icons.keyboard_arrow_down),
+            ],
           ),
         ),
-      ]),
+        ...items.map(
+              (i) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              children: [
+                Text(i.name, style: const TextStyle(fontSize: 16)),
+                const Spacer(),
+                Text(i.quantity,
+                    style: const TextStyle(color: Colors.black54)),
+              ],
+            ),
+          ),
+        ),
+        const Divider(height: 24),
+      ],
+    );
+  }
+
+  Widget _appliances() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Appliances',
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 130,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: 3,
+              itemBuilder: (_, __) {
+                return Container(
+                  width: 110,
+                  margin: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.kitchen,
+                          size: 40, color: Colors.grey),
+                      SizedBox(height: 10),
+                      Text(
+                        'Refrigerator',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
