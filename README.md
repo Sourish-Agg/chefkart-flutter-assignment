@@ -1,47 +1,56 @@
 # ChefKart Flutter Assignment
 
-This project is a Flutter implementation of the ChefKart assignment.  
-The app includes:
-
-- **Select Dishes Screen**
-- **Dish Detail Screen**
-- **API Integration**
-- **Dynamic UI with real API data**
-- **Responsive layout**
-- **Clean UI following the given design**
+A Flutter application built as part of the **ChefKart Flutter Developer Internship Assignment**.  
+The app consumes REST APIs to display popular and recommended dishes, supports add-to-cart functionality, and follows the provided UI design closely.
 
 ---
-
 
 ## 🚀 Features
 
-### ✔ API Driven
-All dishes, popular dishes, ingredients, appliances & details come from the provided API.
-
-### ✔ No Dummy Data
-Everything is fetched from:
-- `GET /dishes/v1/`
-- `GET /dishes/v1/{id}`
-
-### ✔ Clean Modular Code
-- Models in `/models`
-- API service in `/services`
-- UI screens in `/screens`
-
-### ✔ Follows Provided UI Design
-Typography, spacing, card design & layout match the assignment.
+- Fetch dishes dynamically from REST API
+- Popular dishes carousel
+- Recommended dishes list
+- Dish detail screen with ingredients & appliances
+- Dynamic add-to-cart flow
+- Clean, responsive UI matching the given design
+- Error-safe API handling
 
 ---
 
-## 🛠 Technologies Used
-- Flutter
-- Dart
-- HTTP API Integration
-- Provider / State Management (if you used it)
+## 📸 Screenshots
+
+### Select Dishes Screen
+<img src="screenshots/select_dishes.png" width="300"/>
+
+### Dish Detail Screen
+<img src="screenshots/dish_detail.png" width="300"/>
+
+### Cart / Selection Preview
+<img src="screenshots/cart.png" width="300"/>
 
 ---
 
-## ▶ How to Run
+## 🛠 Tech Stack
+
+- **Flutter**
+- **Dart**
+- **REST APIs**
+- **Material UI**
+
+---
+
+## 🌐 API Endpoints Used
+
+- All dishes  
+  `https://8b648f3c-b624-4ceb-9e7b-8028b7df0ad0.mock.pstmn.io/dishes/v1/`
+
+- Dish detail  
+  `https://8b648f3c-b624-4ceb-9e7b-8028b7df0ad0.mock.pstmn.io/dishes/v1/{id}`
+
+---
+
+## ▶️ How to Run the Project
+
 ```bash
 flutter pub get
 flutter run
